@@ -1,56 +1,48 @@
-# Welcome to your Expo app 👋
+# Salud y Bienestar
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Aplicación móvil de salud y bienestar (Proyecto 2, Diseño de Aplicaciones Móviles Avanzadas, ITCA-FEPADE).
+Funciona en Android y en el navegador. Hecha con Expo (React Native), JavaScript, Expo Router y Firebase.
 
-## Get started
+## Estructura
 
-1. Install dependencies
-
-   ```bash
-   npm install
-   ```
-
-2. Start the app
-
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **src/app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
+```
+src/
+  app/            Pantallas (Expo Router). (auth) = sin sesión, (app) = con sesión
+  components/     Componentes reutilizables (Campo, Boton, Selector, Mensaje, Pantalla, Titulo)
+  constants/      Tema visual (provisional, lo define el Miembro 4)
+  context/        AuthContext: sesión del usuario (hook useAuth)
+  services/       Firebase, autenticación, claves de cifrado, SQLite seguro, administración
+  utils/          Validaciones, cifrado AES y reglas de SQL seguro
+firestore.rules   Reglas de seguridad de Firestore
 ```
 
-This command will move the starter code to the **example** directory and create a blank **src/app** directory where you can start developing.
+## Miembro 1: Gestión de usuarios y seguridad (hecho)
 
-### Other setup steps
+- **Autenticación** con Firebase Authentication: registro, inicio de sesión, recuperar contraseña y cerrar sesión.
+  La sesión se mantiene al reabrir la app.
+- **Validaciones** de formularios (`src/utils/validators.js`): correo, contraseña segura (mínimo 8 caracteres con
+  mayúscula, minúscula y número), edad 12–100, peso 30–300 kg, altura 100–250 cm, tipo de sangre, DUI de
+  9 dígitos con guion automático. Para menores de 18 años se pide el teléfono del encargado y el DUI es opcional.
+- **Perfil** del usuario: ver y editar nombre, edad, sexo, peso, altura, tipo de sangre, DUI y objetivos de salud.
+- **Roles**: `usuario`, `moderador` y `admin`. Los administradores tienen una pantalla para nombrar moderadores.
+  Los admins se asignan a mano desde Firebase Console. Se pueden usar `esAdmin` y `esModerador` desde `useAuth()`.
+- **Cifrado** AES-256-GCM de los datos personales y de salud del perfil en Firestore. Ni un administrador puede
+  descifrarlos.
+- **Prevención de ataques**: reglas de seguridad de Firestore (cada usuario solo accede a lo suyo, nadie puede
+  asignarse el rol de admin) y consultas SQL parametrizadas obligatorias en `src/services/sqlite.js`.
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+## Para todo el equipo
 
-## Learn more
+- **Pantallas privadas** van dentro de `src/app/(app)/`; ahí solo entra quien tenga sesión.
+- **Usuario actual:** `const { usuario } = useAuth()`; `usuario.uid` identifica al dueño de cada dato.
+- **SQLite:** usar solo `src/services/sqlite.js`, nunca `expo-sqlite` directamente, y nunca armar SQL con
+  texto concatenado. Cada tabla lleva `uid` y cada consulta filtra por él.
+- **Firestore:** cada colección nueva necesita sus reglas en `firestore.rules`. Las reglas se publican
+  a mano en Firebase Console y una sola persona publica el archivo completo.
+- **Secretos:** la configuración de Firebase va solo en `.env`. Nunca en el código ni en GitHub.
 
-To learn more about developing your project with Expo, look at the following resources:
+## Estado y pendientes
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+- La autenticación y el perfil funcionan con Firebase real. Probados en navegador y Android.
+- El acceso seguro a SQLite está listo, pero aún no se ha probado con tablas reales.
+- SQLite en el navegador es experimental y la clave local es débil allí; los datos reales se prueban en Android.
