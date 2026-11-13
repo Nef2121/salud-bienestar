@@ -75,6 +75,72 @@ service cloud.firestore {
         allow get, create: if esDueno(uid);
         allow list, update, delete: if false;
       }
+
+      // Registros de actividad física
+      match /actividades_fisicas/{actividadId} {
+        allow read: if esDueno(uid);
+
+        allow create, update: if esDueno(uid)
+          && request.resource.data.keys().hasAll([
+            'uid',
+            'fecha',
+            'pasos',
+            'distancia',
+            'calorias',
+            'sincronizado_en'
+          ])
+          && request.resource.data.keys().hasOnly([
+            'uid',
+            'fecha',
+            'pasos',
+            'distancia',
+            'calorias',
+            'sincronizado_en'
+          ])
+          && request.resource.data.uid == uid
+          && request.resource.data.fecha is string
+          && request.resource.data.pasos is int
+          && request.resource.data.pasos >= 0
+          && request.resource.data.distancia is number
+          && request.resource.data.distancia >= 0
+          && request.resource.data.calorias is int
+          && request.resource.data.calorias >= 0
+          && request.resource.data.sincronizado_en is timestamp;
+    }
+
+      // Registros de entrenamientos
+      match /entrenamientos/{entrenamientoId} {
+        allow read: if esDueno(uid);
+
+        allow create, update: if esDueno(uid)
+          && request.resource.data.keys().hasAll([
+            'uid',
+            'fecha',
+            'tipo',
+            'duracion_min',
+            'intensidad',
+            'calorias',
+            'sincronizado_en'
+          ])
+          && request.resource.data.keys().hasOnly([
+            'uid',
+            'fecha',
+            'tipo',
+            'duracion_min',
+            'intensidad',
+            'calorias',
+            'sincronizado_en'
+          ])
+          && request.resource.data.uid == uid
+          && request.resource.data.fecha is string
+          && request.resource.data.tipo is string
+          && request.resource.data.duracion_min is int
+          && request.resource.data.duracion_min > 0
+          && request.resource.data.intensidad in ['Baja', 'Media', 'Alta']
+          && request.resource.data.calorias is int
+          && request.resource.data.calorias >= 0
+          && request.resource.data.sincronizado_en is timestamp;
+    }
     }
   }
 }
