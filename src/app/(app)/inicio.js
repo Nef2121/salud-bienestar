@@ -7,7 +7,7 @@ import Pantalla from "../../components/Pantalla";
 import Titulo from "../../components/Titulo";
 import { useAuth } from "../../context/AuthContext";
 
-// Pantalla de inicio provisional: los demás módulos se enlazan desde aquí.
+//Pantalla principal de la aplicación.
 export default function Inicio() {
   const { usuario, cerrarSesion, esModerador, esAdmin } = useAuth();
   const router = useRouter();
@@ -15,6 +15,8 @@ export default function Inicio() {
 
   const [error, setError] = useState("");
   const [saliendo, setSaliendo] = useState(false);
+
+  //Cierra la sesión y regresa a la pantalla de acceso.
   const salir = async () => {
     setSaliendo(true);
     setError("");
@@ -36,7 +38,7 @@ export default function Inicio() {
       />
       <Mensaje tipo="error">{error}</Mensaje>
       <Mensaje tipo="info">
-        Organiza tus objetivos, comidas y recordatorios desde aquí.
+        Registra tu actividad y organiza tus objetivos, comidas y recordatorios desde aquí.
       </Mensaje>
       {esModerador ? (
         <Mensaje tipo="exito">Tienes permisos de moderación.</Mensaje>
@@ -55,6 +57,26 @@ export default function Inicio() {
         titulo="Notificaciones"
         onPress={() => router.push("/notificaciones")}
       />
+
+      {/*Acceso al seguimiento de actividad física.*/}
+      <Boton titulo="Mi progreso" onPress={() => router.push("/progreso")} />
+
+      <Boton
+        titulo="Registrar actividad"
+        onPress={() => router.push("/registroActividad")}
+      />
+
+      <Boton
+        titulo="Registrar entrenamiento"
+        onPress={() => router.push("/registroEntrenamientos")}
+      />
+
+      <Boton
+        titulo="Consultar entrenamientos"
+        onPress={() => router.push("/consultarEntrenamientos")}
+      />
+
+      {/*Acceso exclusivo para administradores.*/}
       {esAdmin ? (
         <Boton
           titulo="Administrar usuarios"
