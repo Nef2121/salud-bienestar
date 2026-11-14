@@ -4,6 +4,7 @@ import { ActivityIndicator, View } from 'react-native';
 
 import { colores } from '../constants/theme';
 import { AuthProvider, useAuth } from '../context/AuthContext';
+import { NotificacionesProvider } from '../context/NotificacionesContext';
 
 // Rutas protegidas: sin sesión solo existe el grupo (auth); con sesión, el grupo (app).
 function Rutas() {
@@ -34,7 +35,7 @@ export default function RootLayout() {
   return (
     <AuthProvider>
       <StatusBar style="dark" />
-      <Rutas />
+      <NotificacionesProvider><Rutas /></NotificacionesProvider>
     </AuthProvider>
   );
 }

@@ -1,3 +1,4 @@
+import { limpiarNotificaciones } from './notificaciones';
 // Autenticación con Firebase Authentication (correo y contraseña) y perfil en Firestore.
 // Las pantallas solo usan estas funciones (a través de AuthContext).
 //
@@ -100,7 +101,8 @@ onAuthStateChanged(auth, async (user) => {
     publicar(aSesion(user, await leerPerfil(user.uid)));
   } catch {
     // Sin perfil legible no se puede usar la app: se cierra la sesión.
-    await signOut(auth);
+    await limpiarNotificaciones(auth.currentUser?.uid);
+  await signOut(auth);
     publicar(null);
   }
 });

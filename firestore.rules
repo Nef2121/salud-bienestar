@@ -68,6 +68,28 @@ service cloud.firestore {
 
       allow delete: if false;
 
+      // Planificación: contenido cifrado; acceso exclusivo del dueño.
+      match /{modulo}/{registro} {
+        allow read, delete: if esDueno(uid) && modulo in ['objetivos','recordatorios','comidas'];
+        allow create, update: if esDueno(uid) && modulo in ['objetivos','recordatorios','comidas']
+          && request.resource.data.keys().hasOnly(['cifrado','actualizado'])
+          && request.resource.data.cifrado is string
+          && request.resource.data.cifrado.size() >= 30
+          && request.resource.data.cifrado.size() <= 12000
+          && request.resource.data.cifrado.matches('^v1[.].*')
+          && request.resource.data.actualizado == request.time;
+      }
+      match /dispositivos/{dispositivo} {
+        allow read, delete: if esDueno(uid);
+        allow create, update: if esDueno(uid)
+          && request.resource.data.keys().hasOnly(['token','plataforma','actualizado'])
+          && request.resource.data.token is string
+          && request.resource.data.token.size() >= 20
+          && request.resource.data.token.size() <= 4096
+          && request.resource.data.plataforma == 'android'
+          && request.resource.data.actualizado == request.time;
+      }
+
       // Clave de cifrado del usuario: solo su dueño puede leerla o crearla (una vez).
       // Ni los admins ni nadie más tiene acceso. No se puede cambiar ni borrar,
       // porque dejaría sus datos cifrados ilegibles.
@@ -75,6 +97,72 @@ service cloud.firestore {
         allow get, create: if esDueno(uid);
         allow list, update, delete: if false;
       }
+
+      // Registros de actividad física
+      match /actividades_fisicas/{actividadId} {
+        allow read: if esDueno(uid);
+
+        allow create, update: if esDueno(uid)
+          && request.resource.data.keys().hasAll([
+            'uid',
+            'fecha',
+            'pasos',
+            'distancia',
+            'calorias',
+            'sincronizado_en'
+          ])
+          && request.resource.data.keys().hasOnly([
+            'uid',
+            'fecha',
+            'pasos',
+            'distancia',
+            'calorias',
+            'sincronizado_en'
+          ])
+          && request.resource.data.uid == uid
+          && request.resource.data.fecha is string
+          && request.resource.data.pasos is int
+          && request.resource.data.pasos >= 0
+          && request.resource.data.distancia is number
+          && request.resource.data.distancia >= 0
+          && request.resource.data.calorias is int
+          && request.resource.data.calorias >= 0
+          && request.resource.data.sincronizado_en is timestamp;
+    }
+
+      // Registros de entrenamientos
+      match /entrenamientos/{entrenamientoId} {
+        allow read: if esDueno(uid);
+
+        allow create, update: if esDueno(uid)
+          && request.resource.data.keys().hasAll([
+            'uid',
+            'fecha',
+            'tipo',
+            'duracion_min',
+            'intensidad',
+            'calorias',
+            'sincronizado_en'
+          ])
+          && request.resource.data.keys().hasOnly([
+            'uid',
+            'fecha',
+            'tipo',
+            'duracion_min',
+            'intensidad',
+            'calorias',
+            'sincronizado_en'
+          ])
+          && request.resource.data.uid == uid
+          && request.resource.data.fecha is string
+          && request.resource.data.tipo is string
+          && request.resource.data.duracion_min is int
+          && request.resource.data.duracion_min > 0
+          && request.resource.data.intensidad in ['Baja', 'Media', 'Alta']
+          && request.resource.data.calorias is int
+          && request.resource.data.calorias >= 0
+          && request.resource.data.sincronizado_en is timestamp;
+    }
     }
   }
 }

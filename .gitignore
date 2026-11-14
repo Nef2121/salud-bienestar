@@ -42,3 +42,13 @@ example
 # generated native folders
 /ios
 /android
+
+# Configuración nativa local de Firebase
+google-services.json
+functions/node_modules/
+functions/.env*
+
+# Logs de emuladores y CLI
+firebase-debug.log*
+firestore-debug.log*
+ui-debug.log*

@@ -46,3 +46,8 @@ firestore.rules   Reglas de seguridad de Firestore
 - La autenticación y el perfil funcionan con Firebase real. Probados en navegador y Android.
 - El acceso seguro a SQLite está listo, pero aún no se ha probado con tablas reales.
 - SQLite en el navegador es experimental y la clave local es débil allí; los datos reales se prueban en Android.
+
+
+## Miembro 3 — Planificación y notificaciones
+
+Implementados objetivos medibles, medicamentos/vitaminas, comidas y configuración de notificaciones. Ver [activación y pruebas](docs/ACTIVACION_ROL_3.md) y [guía de usuario](docs/GUIA_USUARIO.md). Las reglas locales deben integrarse y publicarse antes de guardar datos. FCM requiere configuración Android y despliegue de la función.

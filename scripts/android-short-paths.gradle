@@ -1,0 +1,12 @@
+// Evita rutas demasiado largas en las herramientas C++ de Windows.
+def staging = new File(System.getenv('SALUD_CXX_DIR') ?: new File(gradle.gradleUserHomeDir, 'salud-cxx').path)
+gradle.beforeProject { p ->
+    ['com.android.application', 'com.android.library'].each { pluginId ->
+        p.plugins.withId(pluginId) {
+            def android = p.extensions.getByName('android')
+            android.defaultConfig.externalNativeBuild.cmake.arguments.add('-DCMAKE_OBJECT_PATH_MAX=250')
+            android.externalNativeBuild.cmake.buildStagingDirectory = new File(staging, p.name)
+        }
+    }
+}
+
