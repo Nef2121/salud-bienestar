@@ -115,7 +115,7 @@ export default function AppLayout() {
 
   return (
     <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="inicio" />
+      <Stack.Screen name="(tabs)" />
       <Stack.Screen name="perfil" />
       <Stack.Screen name="progreso" />
       <Stack.Screen name="registroActividad" />
