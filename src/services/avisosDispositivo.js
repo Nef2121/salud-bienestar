@@ -17,7 +17,7 @@ export async function permiso(solicitar = false) {
     await Notifications.setNotificationChannelAsync("salud", {
       name: "Recordatorios de bienestar",
       importance: Notifications.AndroidImportance.HIGH,
-      sound: "default",
+      // Sin "sound": Android usa el sonido de notificación del sistema.
     });
   let p = await Notifications.getPermissionsAsync();
   if (!p.granted && solicitar)
@@ -67,7 +67,7 @@ export async function sincronizar(uid, registros) {
       content: {
         title: "Recordatorio de salud",
         body: "Tienes un recordatorio programado. Abre la aplicación para consultarlo.",
-        sound: "default",
+        sound: true,
         data: {
           ruta: "/recordatorios",
           firma: JSON.stringify([r.hora, r.frecuencia, r.dia]),
@@ -99,14 +99,20 @@ export function escucharToken(callback) {
     if (Platform.OS === "android") callback(t.data);
   });
 }
+// Rutas que una notificación puede abrir; cualquier otra va a Notificaciones.
+const RUTAS_PERMITIDAS = ["/recordatorios", "/notificaciones"];
+const rutaDe = (respuesta) => {
+  const ruta = respuesta?.notification?.request?.content?.data?.ruta;
+  return RUTAS_PERMITIDAS.includes(ruta) ? ruta : "/notificaciones";
+};
 export function escucharApertura(callback) {
-  const sub = Notifications.addNotificationResponseReceivedListener(() =>
-    callback(),
+  const sub = Notifications.addNotificationResponseReceivedListener((r) =>
+    callback(rutaDe(r)),
   );
   Notifications.getLastNotificationResponseAsync()
     .then((r) => {
       if (r) {
-        callback();
+        callback(rutaDe(r));
         Notifications.clearLastNotificationResponseAsync();
       }
     })

@@ -67,7 +67,7 @@ export function NotificacionesProvider({ children }) {
           .catch(informar);
     });
     const abrir = uid
-      ? escucharApertura(() => router.push("/notificaciones"))
+      ? escucharApertura((ruta) => router.push(ruta))
       : null;
     return () => {
       activo = false;
