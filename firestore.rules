@@ -68,6 +68,28 @@ service cloud.firestore {
 
       allow delete: if false;
 
+      // Planificación: contenido cifrado; acceso exclusivo del dueño.
+      match /{modulo}/{registro} {
+        allow read, delete: if esDueno(uid) && modulo in ['objetivos','recordatorios','comidas'];
+        allow create, update: if esDueno(uid) && modulo in ['objetivos','recordatorios','comidas']
+          && request.resource.data.keys().hasOnly(['cifrado','actualizado'])
+          && request.resource.data.cifrado is string
+          && request.resource.data.cifrado.size() >= 30
+          && request.resource.data.cifrado.size() <= 12000
+          && request.resource.data.cifrado.matches('^v1[.].*')
+          && request.resource.data.actualizado == request.time;
+      }
+      match /dispositivos/{dispositivo} {
+        allow read, delete: if esDueno(uid);
+        allow create, update: if esDueno(uid)
+          && request.resource.data.keys().hasOnly(['token','plataforma','actualizado'])
+          && request.resource.data.token is string
+          && request.resource.data.token.size() >= 20
+          && request.resource.data.token.size() <= 4096
+          && request.resource.data.plataforma == 'android'
+          && request.resource.data.actualizado == request.time;
+      }
+
       // Clave de cifrado del usuario: solo su dueño puede leerla o crearla (una vez).
       // Ni los admins ni nadie más tiene acceso. No se puede cambiar ni borrar,
       // porque dejaría sus datos cifrados ilegibles.
@@ -141,6 +163,65 @@ service cloud.firestore {
           && request.resource.data.calorias >= 0
           && request.resource.data.sincronizado_en is timestamp;
     }
+    }
+
+    // Foro de salud (Miembro 4)
+    match /foro_posts/{postId} {
+      allow read: if autenticado();
+
+      allow create: if autenticado()
+        && request.resource.data.keys().hasAll(['uid', 'autor', 'categoria', 'titulo', 'contenido', 'creado'])
+        && request.resource.data.keys().hasOnly(['uid', 'autor', 'categoria', 'titulo', 'contenido', 'creado'])
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.autor is string
+        && request.resource.data.autor.size() >= 1 && request.resource.data.autor.size() <= 60
+        && request.resource.data.categoria in ['Ejercicio', 'Dieta', 'Sueño', 'Bienestar', 'Otro']
+        && request.resource.data.titulo is string
+        && request.resource.data.titulo.size() >= 3 && request.resource.data.titulo.size() <= 80
+        && request.resource.data.contenido is string
+        && request.resource.data.contenido.size() >= 5 && request.resource.data.contenido.size() <= 1000
+        && request.resource.data.creado == request.time;
+
+      allow update: if false;
+
+      // Borra el dueño o un moderador.
+      allow delete: if autenticado()
+        && (resource.data.uid == request.auth.uid || esModerador());
+
+      match /comentarios/{comentarioId} {
+        allow read: if autenticado();
+
+        allow create: if autenticado()
+          && request.resource.data.keys().hasAll(['uid', 'autor', 'contenido', 'creado'])
+          && request.resource.data.keys().hasOnly(['uid', 'autor', 'contenido', 'creado'])
+          && request.resource.data.uid == request.auth.uid
+          && request.resource.data.autor is string
+          && request.resource.data.autor.size() >= 1 && request.resource.data.autor.size() <= 60
+          && request.resource.data.contenido is string
+          && request.resource.data.contenido.size() >= 2 && request.resource.data.contenido.size() <= 500
+          && request.resource.data.creado == request.time;
+
+        allow update: if false;
+
+        allow delete: if autenticado()
+          && (resource.data.uid == request.auth.uid || esModerador());
+      }
+
+            // "Me gusta": un documento por usuario, con su uid como ID.
+      match /likes/{likeUid} {
+        allow read: if autenticado();
+
+        allow create: if autenticado()
+          && likeUid == request.auth.uid
+          && request.resource.data.keys().hasAll(['uid', 'creado'])
+          && request.resource.data.keys().hasOnly(['uid', 'creado'])
+          && request.resource.data.uid == request.auth.uid
+          && request.resource.data.creado == request.time;
+
+        allow update: if false;
+
+        allow delete: if autenticado() && likeUid == request.auth.uid;
+      }
     }
   }
 }
