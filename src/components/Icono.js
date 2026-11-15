@@ -17,6 +17,7 @@ const ICONOS = {
   salir: { ios: 'rectangle.portrait.and.arrow.right', android: 'logout', web: 'logout' },
   siguiente: { ios: 'chevron.right', android: 'chevron_right', web: 'chevron_right' },
   foro: { ios: 'bubble.left.and.bubble.right.fill', android: 'forum', web: 'forum' },
+  corazon: { ios: 'heart.fill', android: 'favorite', web: 'favorite' },
 };
 
 export default function Icono({ nombre, color = colores.primario, tamano = 24 }) {
