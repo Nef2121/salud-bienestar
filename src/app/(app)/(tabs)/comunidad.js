@@ -8,6 +8,7 @@ import Pantalla from '../../../components/Pantalla';
 import Selector from '../../../components/Selector';
 import Titulo from '../../../components/Titulo';
 import { colores, espacio, radioGrande, sombra, tipografia } from '../../../constants/theme';
+import useAppActiva from '../../../hooks/useAppActiva';
 import { CATEGORIAS, escucharPosts, formatearFecha } from '../../../services/foro';
 
 // Foro de salud: lista de publicaciones en tiempo real.
@@ -16,13 +17,23 @@ export default function Comunidad() {
   const [posts, setPosts] = useState(null);
   const [error, setError] = useState('');
   const [filtro, setFiltro] = useState('Todas');
+  const appActiva = useAppActiva();
 
-  // Ciclo de vida: solo escucha mientras la pestaña está visible.
-  useFocusEffect(
+  // Ciclo de vida: solo escucha con la pestaña visible y la app en primer plano.
+    useFocusEffect(
     useCallback(() => {
+      if (!appActiva) {
+        console.log('FORO: app en segundo plano, sin escucha');
+        return undefined;
+      }
+      console.log('FORO: escuchando publicaciones');
       setError('');
-      return escucharPosts(setPosts, setError);
-    }, []),
+      const dejar = escucharPosts(setPosts, setError);
+      return () => {
+        console.log('FORO: escucha detenida');
+        dejar();
+      };
+    }, [appActiva]),
   );
 
   const visibles = (posts ?? []).filter((p) => filtro === 'Todas' || p.categoria === filtro);
