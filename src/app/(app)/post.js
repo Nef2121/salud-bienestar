@@ -9,15 +9,16 @@ import Mensaje from '../../components/Mensaje';
 import Pantalla from '../../components/Pantalla';
 import { colores, espacio, radioGrande, tipografia } from '../../constants/theme';
 import { useAuth } from '../../context/AuthContext';
+import useAppActiva from '../../hooks/useAppActiva';
 import {
-    alternarLike,
-    crearComentario,
-    eliminarComentario,
-    eliminarPost,
-    escucharComentarios,
-    escucharLikes,
-    escucharPost,
-    formatearFecha,
+  alternarLike,
+  crearComentario,
+  eliminarComentario,
+  eliminarPost,
+  escucharComentarios,
+  escucharLikes,
+  escucharPost,
+  formatearFecha,
 } from '../../services/foro';
 
 // Detalle de una publicación: contenido, comentarios y moderación.
@@ -25,6 +26,7 @@ export default function Post() {
   const { id } = useLocalSearchParams();
   const { usuario, esModerador } = useAuth();
   const router = useRouter();
+  const appActiva = useAppActiva();
 
   const [post, setPost] = useState(undefined); // undefined = cargando, null = no existe
   const [comentarios, setComentarios] = useState([]);
@@ -34,8 +36,9 @@ export default function Post() {
   const [enviando, setEnviando] = useState(false);
   const [confirmando, setConfirmando] = useState(null); // 'post' o id de un comentario
 
-  // Ciclo de vida: deja de escuchar al salir de la pantalla.
-    useEffect(() => {
+    // Ciclo de vida: deja de escuchar al salir de la pantalla o al pasar a segundo plano.
+  useEffect(() => {
+    if (!appActiva) return undefined;
     const dejarPost = escucharPost(id, setPost, setError);
     const dejarComentarios = escucharComentarios(id, setComentarios, setError);
     const dejarLikes = escucharLikes(id, setLikes, setError);
@@ -44,7 +47,7 @@ export default function Post() {
       dejarComentarios();
       dejarLikes();
     };
-  }, [id]);
+  }, [id, appActiva]);
 
     const likeDado = likes.includes(usuario.uid);
 
